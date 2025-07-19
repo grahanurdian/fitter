@@ -60,3 +60,34 @@ def plot_elevation_pace(df: pd.DataFrame):
     )
 
     return fig
+
+def plot_metrics(df):
+    plots = []
+
+    # Elevation
+    elevation_trace = go.Scatter(x=df['timestamp'], y=df['elevation'],
+                                 mode='lines', name='Elevation (m)', line=dict(color='brown'))
+    plots.append(elevation_trace)
+
+    # Speed or Pace
+    if 'speed' in df.columns:
+        speed_trace = go.Scatter(x=df['timestamp'], y=df['speed'] * 3.6,
+                                 mode='lines', name='Speed (km/h)', line=dict(color='blue'))
+        plots.append(speed_trace)
+    elif 'pace' in df.columns:
+        pace_trace = go.Scatter(x=df['timestamp'], y=df['pace'] / 60,
+                                mode='lines', name='Pace (min/km)', line=dict(color='green'))
+        plots.append(pace_trace)
+
+    # Heart Rate
+    if 'heart_rate' in df.columns:
+        hr_trace = go.Scatter(x=df['timestamp'], y=df['heart_rate'],
+                              mode='lines', name='Heart Rate (bpm)', line=dict(color='red'))
+        plots.append(hr_trace)
+
+    fig = go.Figure(data=plots)
+    fig.update_layout(title='Activity Metrics',
+                      xaxis_title='Time',
+                      yaxis_title='Value',
+                      hovermode='x unified')
+    st.plotly_chart(fig, use_container_width=True)
