@@ -45,21 +45,23 @@ if page == "Cycling":
         st.download_button("Download Adjusted GPX", data=gpx_data, file_name=f"adjusted_{formatted_datetime}.gpx")
 
 elif page == "Running":
-    st.header("🏃 Running Mode")
-    uploaded_gpx = st.file_uploader("Upload a .GPX file", type=["gpx"])
+    st.header("🏃‍♀️ Running Summary")
+    gpx_file = st.file_uploader("Upload .gpx file", type="gpx")
 
-    if uploaded_gpx:
-        df = load_gpx_file(uploaded_gpx)
+    if gpx_file:
+        df = load_gpx_file(gpx_file)
 
-        # Plot elevation vs pace
-        st.plotly_chart(plot_elevation_pace(df))
+        st.subheader("📊 Summary")
+        total_distance = df['distance'].iloc[-1] / 1000
+        avg_pace = df['pace'].mean()  # in sec/km
+        minutes = int(avg_pace // 60)
+        seconds = int(avg_pace % 60)
+        elevation_gain = df['elevation'].diff().clip(lower=0).sum()
 
-        # Summary
-        st.subheader("Summary")
-        total_distance_km = df['distance'].iloc[-1] / 1000
-        avg_pace_sec_per_km = df['pace'].mean()
-        avg_pace_min = int(avg_pace_sec_per_km // 60)
-        avg_pace_sec = int(avg_pace_sec_per_km % 60)
-        st.metric("Total Distance (km)", f"{total_distance_km:.2f}")
-        st.metric("Avg Pace", f"{avg_pace_min}:{avg_pace_sec:02d} min/km")
-        st.metric("Elevation Gain (m)", f"{df['elevation'].diff().clip(lower=0).sum():.0f}")
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Distance", f"{total_distance:.2f} km")
+        col2.metric("Avg Pace", f"{minutes}:{seconds:02d} /km")
+        col3.metric("Elevation Gain", f"{elevation_gain:.0f} m")
+
+        st.subheader("📈 Charts")
+        plot_metrics(df)
