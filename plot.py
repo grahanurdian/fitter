@@ -62,32 +62,19 @@ def plot_elevation_pace(df: pd.DataFrame):
     return fig
 
 def plot_metrics(df):
-    plots = []
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=df["elapsed_sec"], y=df["elevation"], name="Elevation (m)", yaxis="y1"))
+    fig.add_trace(go.Scatter(x=df["elapsed_sec"], y=df["pace"] / 60, name="Pace (min/km)", yaxis="y2"))
 
-    # Elevation
-    elevation_trace = go.Scatter(x=df['timestamp'], y=df['elevation'],
-                                 mode='lines', name='Elevation (m)', line=dict(color='brown'))
-    plots.append(elevation_trace)
+    if "heart_rate" in df.columns:
+        fig.add_trace(go.Scatter(x=df["elapsed_sec"], y=df["heart_rate"], name="Heart Rate (bpm)", yaxis="y3"))
 
-    # Speed or Pace
-    if 'speed' in df.columns:
-        speed_trace = go.Scatter(x=df['timestamp'], y=df['speed'] * 3.6,
-                                 mode='lines', name='Speed (km/h)', line=dict(color='blue'))
-        plots.append(speed_trace)
-    elif 'pace' in df.columns:
-        pace_trace = go.Scatter(x=df['timestamp'], y=df['pace'] / 60,
-                                mode='lines', name='Pace (min/km)', line=dict(color='green'))
-        plots.append(pace_trace)
-
-    # Heart Rate
-    if 'heart_rate' in df.columns:
-        hr_trace = go.Scatter(x=df['timestamp'], y=df['heart_rate'],
-                              mode='lines', name='Heart Rate (bpm)', line=dict(color='red'))
-        plots.append(hr_trace)
-
-    fig = go.Figure(data=plots)
-    fig.update_layout(title='Activity Metrics',
-                      xaxis_title='Time',
-                      yaxis_title='Value',
-                      hovermode='x unified')
+    fig.update_layout(
+        title="Elevation, Pace, and Heart Rate Over Time",
+        xaxis=dict(title="Elapsed Time (s)"),
+        yaxis=dict(title="Elevation (m)", side="left"),
+        yaxis2=dict(title="Pace (min/km)", overlaying="y", side="right", anchor="free", position=0.9),
+        yaxis3=dict(title="Heart Rate (bpm)", overlaying="y", side="right", anchor="x", position=1.0),
+        legend=dict(x=0, y=1)
+    )
     st.plotly_chart(fig, use_container_width=True)
