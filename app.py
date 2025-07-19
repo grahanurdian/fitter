@@ -6,54 +6,32 @@ from plot import plot_elevation_speed
 from fit_processing import adjust_timestamps  # Make sure this exists
 from datetime import datetime, time
 
-st.set_page_config(page_title="Fitter – FIT File Speed Adjuster", layout="wide")
+st.set_page_config(page_title="Fitter", layout="centered")
 st.title("🚴 Fitter – FIT File Speed Adjuster")
 
 uploaded_file = st.file_uploader("Upload a .FIT file", type=["fit"])
 avg_speed = st.number_input("Desired Average Speed (km/h)", value=25.0)
 
-# Load file only after upload
 if uploaded_file:
     df = load_fit_file(uploaded_file)
-
-    # ----------------- Start Time Adjustment -----------------
-    st.subheader("🕒 Adjust Start Time")
+    
+    st.subheader("Adjust Start Time")
     min_date = df['timestamp'].dt.date.min()
-    default_time = df['timestamp'].dt.time.min()
-    default_datetime = datetime.combine(min_date, default_time)
+    date_input = st.date_input("New Date", min_value=min_date, value=min_date)
+    time_input = st.time_input("New Time", value=df['timestamp'].dt.time.min())
+    new_datetime = datetime.combine(date_input, time_input)
 
-    selected_date = st.date_input("Select new start date", value=min_date)
-    selected_time = st.time_input("Select new start time", value=default_time)
-    custom_start_datetime = datetime.combine(selected_date, selected_time)
-
-    # Adjust timestamps
-    df = adjust_timestamps(df, custom_start_datetime)
-
-    # ----------------- Simulate Speed -----------------
+    df = adjust_timestamps(df, new_datetime)
     df = simulate_speeds(df, avg_speed)
 
-    # ----------------- Summary Stats -----------------
-    st.subheader("📊 Summary Statistics")
-    col1, col2 = st.columns(2)
+    st.plotly_chart(plot_elevation_speed(df))
 
-    with col1:
-        st.metric("Total Distance (km)", f"{df['distance'].iloc[-1] / 1000:.2f}")
-        st.metric("Total Elevation Gain (m)", f"{df['elevation'].diff().clip(lower=0).sum():.1f}")
-        st.metric("Max Elevation (m)", f"{df['elevation'].max():.1f}")
-        st.metric("Min Elevation (m)", f"{df['elevation'].min():.1f}")
+    # Summary stats
+    st.subheader("📊 Summary Stats")
+    st.markdown(f"**Elevation Gain:** {df['altitude'].diff().clip(lower=0).sum():.1f} m")
+    st.markdown(f"**Simulated Avg Speed:** {df['speed'].mean() * 3.6:.2f} km/h")
 
-    with col2:
-        st.metric("Average Speed (km/h)", f"{df['speed'].mean() * 3.6:.2f}")
-        st.metric("Max Speed (km/h)", f"{df['speed'].max() * 3.6:.2f}")
-        st.metric("Moving Time (min)", f"{df['timestamp'].diff().dt.total_seconds().sum() / 60:.1f}")
-
-    # ----------------- Plot -----------------
-    st.subheader("📈 Elevation and Speed")
-    st.plotly_chart(plot_elevation_speed(df), use_container_width=True)
-
-    # ----------------- Export -----------------
-    st.subheader("📥 Download Adjusted GPX")
     gpx_data = export_gpx(df)
-    formatted_datetime = custom_start_datetime.strftime("%Y%m%d_%H%M%S")
+    formatted_datetime = new_datetime.strftime("%Y%m%d_%H%M%S")
     file_name = f"adjusted_{formatted_datetime}.gpx"
-    st.download_button("Download Adjusted GPX", data=gpx_data, file_name=file_name, mime="application/gpx+xml")
+    st.download_button("Download Adjusted GPX", data=gpx_data, file_name=file_name)
