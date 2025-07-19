@@ -1,5 +1,5 @@
 import streamlit as st
-from fit_processing import load_fit_file
+from fit_processing import load_fit_file, adjust_timestamps
 from speed_simulation import simulate_speeds
 from export import export_gpx
 from plot import plot_elevation_speed
