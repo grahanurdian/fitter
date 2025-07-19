@@ -1,5 +1,6 @@
 import plotly.graph_objects as go
 import pandas as pd
+import streamlit as st
 
 def plot_elevation_speed(df: pd.DataFrame):
     fig = go.Figure()
