@@ -29,27 +29,34 @@ def plot_elevation_speed(df: pd.DataFrame):
 
 
 def plot_elevation_pace(df: pd.DataFrame):
+    import plotly.graph_objs as go
+
     fig = go.Figure()
 
-    # Elevation plot (secondary y-axis)
-    fig.add_trace(
-        go.Scatter(x=df['timestamp'], y=df['elevation'],
-                   name='Elevation (m)', line=dict(color='green'), yaxis='y1')
-    )
+    fig.add_trace(go.Scatter(
+        x=df['timestamp'],
+        y=df['pace'],
+        mode='lines',
+        name='Pace (min/km)',
+        yaxis='y1',
+        line=dict(color='blue')
+    ))
 
-    # Pace plot
-    pace = df['pace'] / 60  # convert to min/km
-    fig.add_trace(
-        go.Scatter(x=df['timestamp'], y=pace,
-                   name='Pace (min/km)', line=dict(color='red'), yaxis='y2')
-    )
+    fig.add_trace(go.Scatter(
+        x=df['timestamp'],
+        y=df['elevation'],
+        mode='lines',
+        name='Elevation (m)',
+        yaxis='y2',
+        line=dict(color='green')
+    ))
 
     fig.update_layout(
-        title='Elevation & Pace Over Time',
-        xaxis=dict(title='Time'),
-        yaxis=dict(title='Elevation (m)', side='left'),
-        yaxis2=dict(title='Pace (min/km)', overlaying='y', side='right', autorange='reversed'),
-        legend=dict(x=0.01, y=0.99),
-        height=500
+        title='Pace & Elevation Over Time',
+        xaxis_title='Time',
+        yaxis=dict(title='Pace (min/km)', side='left'),
+        yaxis2=dict(title='Elevation (m)', overlaying='y', side='right'),
+        template='plotly_white'
     )
+
     return fig
