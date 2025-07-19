@@ -3,7 +3,7 @@ from fit_processing import load_fit_file
 from speed_simulation import simulate_speeds
 from export import export_gpx
 from plot import plot_elevation_speed
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 
 st.title("🚴 Fitter – FIT File Speed Adjuster")
 
