@@ -3,8 +3,9 @@ from datetime import datetime, timedelta, time
 from fit_processing import load_fit_file, adjust_timestamps
 from speed_simulation import simulate_speeds
 from export import export_gpx
-from plot import plot_elevation_speed, plot_elevation_pace
+from plot import plot_elevation_speed, plot_elevation_pace, plot_metrics
 from gpx_processing import load_gpx_file
+
 
 st.set_page_config(page_title="Fitter", layout="wide")
 st.title("🚴‍♂️ Fitter – Activity File Adjuster")
