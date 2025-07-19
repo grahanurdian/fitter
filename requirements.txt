@@ -1,0 +1,7 @@
+streamlit
+fitdecode
+haversine
+pandas
+numpy
+matplotlib
+gpxpy
