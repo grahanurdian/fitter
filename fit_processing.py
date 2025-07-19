@@ -31,9 +31,9 @@ def decode_position(raw_value):
     return raw_value * (180 / 2**31)
 
 def adjust_timestamps(df, new_start_time):
-    """
-    Shift all timestamps in the DataFrame so that the first one starts at new_start_time.
-    """
+    # Ensure both timestamps are tz-naive
+    df['timestamp'] = df['timestamp'].dt.tz_localize(None)
+
     original_start_time = df['timestamp'].iloc[0]
     time_diff = new_start_time - original_start_time
     df['timestamp'] = df['timestamp'] + time_diff
