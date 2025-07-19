@@ -1,6 +1,5 @@
 import fitdecode
 import pandas as pd
-from fitdecode.utils import decode_position
 
 def load_fit_file(file) -> pd.DataFrame:
     records = []
@@ -17,3 +16,7 @@ def load_fit_file(file) -> pd.DataFrame:
     df['lon'] = df['position_long'].apply(decode_position)
     df['elevation'] = df['altitude']
     return df.reset_index(drop=True)
+
+def decode_position(raw_value):
+    """Decode raw position value to degrees."""
+    return raw_value * (180 / 2**31)  # Convert from raw FIT format to degrees
