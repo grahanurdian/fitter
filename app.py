@@ -3,7 +3,7 @@ from fit_processing import load_fit_file
 from speed_simulation import simulate_speeds
 from export import export_gpx
 from plot import plot_elevation_speed
-from timestamp_adjustment import adjust_timestamps  # Make sure this exists
+from fit_processing import adjust_timestamps  # Make sure this exists
 from datetime import datetime, time
 
 st.set_page_config(page_title="Fitter – FIT File Speed Adjuster", layout="wide")
