@@ -1,6 +1,6 @@
 # gpx_processing.py
 import gpxpy
-import gpxpy.gpx
+import gpxpy.gpx    
 import pandas as pd
 import numpy as np
 from datetime import datetime
@@ -53,5 +53,8 @@ def load_gpx_file(uploaded_file):
     # Calculate pace in minutes per km
     df['pace'] = df['delta_t'] / 60 / (df['distance_m'] / 1000)
     df['pace'] = df['pace'].replace([np.inf, -np.inf], np.nan).fillna(method='ffill')
+
+    # ✅ Add elapsed time in seconds
+    df['elapsed_sec'] = (df['timestamp'] - df['timestamp'].iloc[0]).dt.total_seconds()
 
     return df
