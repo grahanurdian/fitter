@@ -30,15 +30,11 @@ def decode_position(raw_value):
     """Decode raw position value to degrees."""
     return raw_value * (180 / 2**31)
 
-def adjust_timestamps(records, new_start_time):
+def adjust_timestamps(df, new_start_time):
     """
-    Shift all timestamps so that the first record starts at new_start_time.
+    Shift all timestamps in the DataFrame so that the first one starts at new_start_time.
     """
-    original_start_time = records[0]['timestamp']
+    original_start_time = df['timestamp'].iloc[0]
     time_diff = new_start_time - original_start_time
-
-    for record in records:
-        if 'timestamp' in record:
-            record['timestamp'] += time_diff
-
-    return records
+    df['timestamp'] = df['timestamp'] + time_diff
+    return df

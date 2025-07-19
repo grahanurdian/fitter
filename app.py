@@ -13,9 +13,13 @@ avg_speed = st.number_input("Desired Average Speed (km/h)", value=25.0)
 # Adjust start time
 st.subheader("Adjust Start Time")
 
-new_date = st.date_input("Select new Start Date", value=datetime.now().date())
-new_time = st.time_input("Select new Start Time", value=datetime.now().time())
-new_datetime = datetime.combine(new_date, new_time)
+df = load_fit_file(uploaded_file)
+
+# User selects custom time (e.g., from time input)
+custom_start_time = datetime.combine(df['timestamp'].dt.date.min(), time(hour, minute))
+
+# Apply timestamp shift
+df = adjust_timestamps(df, custom_start_time)
 
 if uploaded_file:
     df = load_fit_file(uploaded_file)
