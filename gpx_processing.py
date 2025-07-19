@@ -44,9 +44,13 @@ def load_gpx_file(uploaded_file):
     df['distance_m'] = distances
     df['delta_t'] = times
 
+    # Total cumulative distance in kilometers
     df['cumulative_distance_km'] = df['distance_m'].cumsum() / 1000
 
-    # Calculate pace in min/km
+    # Also add total distance column in km (for summary)
+    df['distance'] = df['distance_m'] / 1000
+
+    # Calculate pace in minutes per km
     df['pace'] = df['delta_t'] / 60 / (df['distance_m'] / 1000)
     df['pace'] = df['pace'].replace([np.inf, -np.inf], np.nan).fillna(method='ffill')
 
