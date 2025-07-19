@@ -21,45 +21,60 @@ def load_gpx_file(uploaded_file):
                 })
 
     df = pd.DataFrame(data)
+
+    if df.empty or len(df) < 2:
+        raise ValueError("GPX file has insufficient track points.")
+
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df = df.sort_values('timestamp').reset_index(drop=True)
 
+    # Calculate distance, time delta, and elevation gain
     distances = [0]
     times = [0]
-    elevation_gain = [0]
+    elev_gain = [0]
 
     total_gain = 0
+
     for i in range(1, len(df)):
-        coord1 = (df.loc[i-1, 'latitude'], df.loc[i-1, 'longitude'])
-        coord2 = (df.loc[i, 'latitude'], df.loc[i, 'longitude'])
+        prev = df.iloc[i - 1]
+        curr = df.iloc[i]
 
+        # Distance
+        coord1 = (prev['latitude'], prev['longitude'])
+        coord2 = (curr['latitude'], curr['longitude'])
         dist = geodesic(coord1, coord2).meters
-        time_diff = (df.loc[i, 'timestamp'] - df.loc[i-1, 'timestamp']).total_seconds()
-        elev_diff = df.loc[i, 'elevation'] - df.loc[i-1, 'elevation']
 
-        if elev_diff > 0:
-            total_gain += elev_diff
+        # Time delta
+        delta_t = (curr['timestamp'] - prev['timestamp']).total_seconds()
+
+        # Elevation gain
+        gain = max(0, curr['elevation'] - prev['elevation'])
+        total_gain += gain
 
         distances.append(dist)
-        times.append(time_diff)
-        elevation_gain.append(total_gain)
+        times.append(delta_t)
+        elev_gain.append(gain)
 
     df['distance_m'] = distances
     df['delta_t'] = times
-    df['cumulative_distance_km'] = df['distance_m'].cumsum() / 1000
-
-    # ✅ Correct total distance (in km)
-    total_distance_km = df['distance_m'].sum() / 1000
-    df['distance'] = total_distance_km
-
-    # ✅ Correct pace (in min/km)
-    df['pace'] = (df['delta_t'] / 60) / (df['distance_m'] / 1000)
-    df['pace'] = df['pace'].replace([np.inf, -np.inf], np.nan).fillna(method='ffill')
-
-    # ✅ Add elapsed seconds
+    df['cumulative_distance_km'] = np.cumsum(distances) / 1000
     df['elapsed_sec'] = (df['timestamp'] - df['timestamp'].iloc[0]).dt.total_seconds()
 
-    # ✅ Add total elevation gain (same value for all rows, for summary use)
+    # Use sum of all distances as total distance (same value for summary)
+    total_distance_km = sum(distances) / 1000
+    df['distance'] = total_distance_km
+
+    # Calculate pace (min/km)
+    pace = []
+    for i in range(len(df)):
+        d = df.loc[i, 'distance_m'] / 1000
+        t = df.loc[i, 'delta_t'] / 60
+        p = t / d if d > 0 else np.nan
+        pace.append(p)
+
+    df['pace'] = pd.Series(pace).fillna(method='ffill').replace([np.inf, -np.inf], np.nan)
+
+    # Elevation gain: total (for summary), cumulative column if needed
     df['elevation_gain'] = total_gain
 
     return df
